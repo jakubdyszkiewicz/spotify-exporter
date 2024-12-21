@@ -1,0 +1,8 @@
+client_id = ""
+client_secret = ""
+redirect_uri = "http://localhost:8888" # has to be the same as in spotify app dev account
+ping_url = ""
+results_dir = "/app/data"
+
+[schedule]
+cron = "0 1 * * *"  # Every day at 1 AM
