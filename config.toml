@@ -1,8 +1,12 @@
 client_id = ""
 client_secret = ""
-redirect_uri = "http://localhost:8888" # has to be the same as in spotify app dev account
+redirect_uri = "http://localhost:8888/callback" # has to be the same as in spotify app dev account
 ping_url = ""
 results_dir = "/app/data"
+
+[server]
+host = "0.0.0.0"
+port = 8888
 
 [schedule]
 cron = "0 1 * * *"  # Every day at 1 AM

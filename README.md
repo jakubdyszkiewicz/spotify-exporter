@@ -14,12 +14,37 @@ Currently, I have 239 playlist so that's the data I tested it on.
 
 ## Requirements
 - Python 3.11+
-- A Spotify Developer account with `client_id` and `client_secret`.
+- A Spotify Developer account with `client_id` and `client_secret`. It's free.
 
-## Limitations
-Most of my playlists are stored in folders. Sadly, there is no API to retrieve folder for each playlist.  
+## Authentication
+The most annoying part is authentication. Creating an app and acquiring `client_id` and `client_secret` is not a full story.
+You also need to authenticate as a user within the app that you created using OAuth flow. This requires user interaction.
+Spotipy offers two ways of doing this. It either opens a browser or requires input on stdin.
+Both does not work well inside a docker container, especially when running on the server.
+This project instead starts a server at port 8888 that serves HTML page with a link to auth in Spotify.
+To finish the authentication, it expects callback at `<address>:8888/callback` to finish auth.
 
-## Installation
+When you create an app in Spotify, the redirect URL has to be the same value as in `config.toml`.
+If you are starting on localhost, it can be just `http://localhost:8888/callbacks`
+
+The good news is that once you authenticate it preserves the data quite well.
+Long lived refresh token is stored in `.cache` where exporter is run (`/app/.cache` for Docker).
+
+## Running
+1) Update `config.toml` with your auth data and schedule.
+2) Run the app
+### Docker
+```
+docker run \
+  -e TZ=Europe/Warsaw \
+  -v $(pwd)/out:/app/data \
+  -v $(pwd)/my-config.toml:/app/config.toml \
+  -p 8888:8888 \
+  spotify-exporter
+```
+Change the [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), otherwise the Cron might surprise you.
+
+### Python
 ```bash
 git clone https://github.com/jakubdyszkiewicz/spotify-exporter.git
 cd spotify-exporter
@@ -28,15 +53,13 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 pip3 install -r requirements.txt
-```
 
-## Running
-Update config.toml with your files
-```
 python3 spotify-exporter.py config.toml
 ```
 
-## Sample output
+3) Go to `localhost:8888` to complete auth flow.
+4) Wait for data
+### Sample output
 ```
 $ cat out/spotify_playlists.csv
 Playlist ID,Playlist Name,Playlist Description,Playlist Owner
@@ -47,19 +70,5 @@ Playlist ID,Track ID,Track Name,Artist(s),Album,Album Release Date
 1CWQLr0tVfvbqVBTX1QPxZ,11AGQ5cmFyHalx9tsAVkkA,BTS,Chromeo,Adult Contemporary,2024-02-16
 ```
 
-## Docker
-Building
-```
-docker build -t spotify-exporter .
-```
-
-Running
-```
-docker run \
-  -e TZ=Europe/Warsaw \
-  -v $(pwd)/out:/app/data \
-  -v $(pwd)/my-config.toml:/app/config.toml \
-  -p 8888:8888 \
-  spotify-exporter
-```
-
+## Limitations
+Most of my playlists are stored in folders. Sadly, there is no API to retrieve folder for each playlist.  

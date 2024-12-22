@@ -19,14 +19,6 @@ def load_config(file_path):
         print(f"Error loading configuration file: {e}")
         raise
 
-def save_config(config, file_path):
-    try:
-        with open(file_path, 'wb') as f:
-            f.write(tomllib.dumps(config).encode())
-    except Exception as e:
-        print(f"Error saving configuration file: {e}")
-        raise
-
 def ensure_directory(directory_path):
     if not os.path.exists(directory_path):
         print(f"Directory '{directory_path}' does not exist. Creating it.")
@@ -34,13 +26,17 @@ def ensure_directory(directory_path):
     else:
         print(f"Directory '{directory_path}' exists.")
 
-def start_oauth_server(client_id, client_secret, redirect_uri, scope):
+def get_auth_manager(config):
+    return SpotifyOAuth(client_id=config['client_id'],
+                        client_secret=config['client_secret'],
+                        redirect_uri=config['redirect_uri'],
+                        scope="playlist-read-private playlist-read-collaborative",
+                        open_browser=False)
+
+def start_oauth_server(config):
     app = Flask(__name__)
 
-    sp_oauth = SpotifyOAuth(client_id=client_id,
-                            client_secret=client_secret,
-                            redirect_uri=redirect_uri,
-                            scope=scope)
+    sp_oauth = get_auth_manager(config)
 
     @app.route('/')
     def home():
@@ -56,9 +52,11 @@ def start_oauth_server(client_id, client_secret, redirect_uri, scope):
         code = sp_oauth.parse_auth_response_url(request.url)
         if not code:
             return "Error: No authorization code received.", 400
-
         try:
             sp_oauth.get_access_token(code, as_dict=False)
+            # We don't care about the result here.
+            # Spotipy stores the token in .cache on successful auth.
+            # The cron that runs on different thread will just pick up credentials from .cache.
         except Exception as e:
             print(f"Error getting token: {e}")
             return '''<h1>Spotify OAuth Failure!</h1>'''
@@ -68,17 +66,15 @@ def start_oauth_server(client_id, client_secret, redirect_uri, scope):
         <p>Refresh token saved. The cron task will now use this token.</p>
         '''
 
-    print("Starting OAuth server at http://localhost:8888")
-    app.run(host='0.0.0.0', port=8888)
+    host = config.get('server', {}).get('host', "0.0.0.0")
+    port = config.get('server', {}).get('port', 8888)
+    print(f"Starting OAuth server at http://{host}:{port}")
+    app.run(host, port)
 
 def export_playlists(config):
     ensure_directory(config['results_dir'])
 
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=config['client_id'],
-                                                client_secret=config['client_secret'],
-                                                redirect_uri=config['redirect_uri'],
-                                                scope="playlist-read-private playlist-read-collaborative",
-                                                open_browser=False))
+    sp = spotipy.Spotify(auth_manager=get_auth_manager(config))
     tracks_data = []
     playlist_data = []
     playlists = sp.current_user_playlists()
@@ -159,10 +155,7 @@ def main():
     config = load_config(config_file)
 
     # Start OAuth server in a separate thread
-    oauth_thread = Thread(target=start_oauth_server, args=(
-        config['client_id'], config['client_secret'], config['redirect_uri'],
-        "playlist-read-private playlist-read-collaborative"
-    ))
+    oauth_thread = Thread(target=start_oauth_server, args=(config,))
     oauth_thread.daemon = True
     oauth_thread.start()
 
