@@ -31,6 +31,6 @@ jobs:
         with:
           push: true
           tags: |
-            your-dockerhub-username/spotify-exporter:latest
-            your-dockerhub-username/spotify-exporter:${{ env.tag }}
+            jakubdyszkiewicz/spotify-exporter:latest
+            jakubdyszkiewicz/spotify-exporter:${{ env.tag }}
           platforms: linux/amd64,linux/arm64
