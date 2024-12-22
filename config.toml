@@ -3,6 +3,7 @@ client_secret = ""
 redirect_uri = "http://localhost:8888/callback" # has to be the same as in spotify app dev account
 ping_url = ""
 results_dir = "/app/data"
+auth_cache_dir = "/app/auth-cache"
 
 [server]
 host = "0.0.0.0"

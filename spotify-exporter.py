@@ -10,6 +10,7 @@ from croniter import croniter
 from datetime import datetime
 from flask import Flask, request
 from threading import Thread
+from spotipy.cache_handler import CacheFileHandler
 
 def load_config(file_path):
     try:
@@ -27,11 +28,13 @@ def ensure_directory(directory_path):
         print(f"Directory '{directory_path}' exists.")
 
 def get_auth_manager(config):
+    cache_path = os.path.join(config['auth_cache_dir'], 'auth')
     return SpotifyOAuth(client_id=config['client_id'],
                         client_secret=config['client_secret'],
                         redirect_uri=config['redirect_uri'],
                         scope="playlist-read-private playlist-read-collaborative",
-                        open_browser=False)
+                        open_browser=False,
+                        cache_handler=CacheFileHandler(username="",cache_path=cache_path))
 
 def start_oauth_server(config):
     app = Flask(__name__)

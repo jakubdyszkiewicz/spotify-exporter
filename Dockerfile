@@ -11,5 +11,6 @@ COPY spotify-exporter.py .
 RUN pip install --no-cache-dir -r requirements.txt
 
 VOLUME /app/data
+VOLUME /app/auth-cache
 
 CMD ["python", "spotify-exporter.py", "/app/config.toml"]

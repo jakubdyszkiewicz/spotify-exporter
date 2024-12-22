@@ -27,11 +27,11 @@ When you create an app in Spotify, the redirect URL has to be the same value as 
 If you are starting out on localhost, it can be just `http://localhost:8888/callbacks`
 
 The good news is that once you authenticate it preserves the data quite well.
-Long lived refresh token is stored in `.cache` where exporter is run (`/app/.cache` for Docker).
+Long lived refresh token is stored in `/app/auth-cache` by default.
 If you plan to recreate container a lot, consider mounting a volume for it, but keep in mind it contains credentials.
 
 ## Running
-1) Update `config.toml` with your auth data and schedule.
+1) Update `config.toml` with schedule and app secret.
 2) Run the app
 
 ### Docker
@@ -39,7 +39,8 @@ If you plan to recreate container a lot, consider mounting a volume for it, but 
 docker run \
   -e TZ=Europe/Warsaw \
   -v $(pwd)/out:/app/data \
-  -v $(pwd)/my-config.toml:/app/config.toml \
+  -v $(pwd)/auth-cache:/app/auth-cache \
+  -v $(pwd)/config.toml:/app/config.toml \
   -p 8888:8888 \
   jakubdyszkiewicz/spotify-exporter:latest
 ```

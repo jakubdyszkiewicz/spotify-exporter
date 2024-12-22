@@ -9,3 +9,4 @@ __pycache__/
 my-config.toml
 .cache
 out/
+auth-cache/
