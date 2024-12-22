@@ -33,3 +33,4 @@ jobs:
           tags: |
             your-dockerhub-username/spotify-exporter:latest
             your-dockerhub-username/spotify-exporter:${{ env.tag }}
+          platforms: linux/amd64,linux/arm64

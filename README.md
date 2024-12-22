@@ -18,17 +18,18 @@ Currently, I have 239 playlist so that's the data I tested it on.
 
 ## Authentication
 The most annoying part is authentication. Creating an app and acquiring `client_id` and `client_secret` is not a full story.
-You also need to authenticate as a user within the app that you created using OAuth flow. This requires user interaction.
+You also need to authenticate as a user using OAuth flow within the app that you created. This requires user interaction.
 Spotipy offers two ways of doing this. It either opens a browser or requires input on stdin.
 Both does not work well inside a docker container, especially when running on the server.
 This project instead starts a server at port 8888 that serves HTML page with a link to auth in Spotify.
 To finish the authentication, it expects callback at `<address>:8888/callback` to finish auth.
 
 When you create an app in Spotify, the redirect URL has to be the same value as in `config.toml`.
-If you are starting on localhost, it can be just `http://localhost:8888/callbacks`
+If you are starting out on localhost, it can be just `http://localhost:8888/callbacks`
 
 The good news is that once you authenticate it preserves the data quite well.
 Long lived refresh token is stored in `.cache` where exporter is run (`/app/.cache` for Docker).
+If you plan to recreate container a lot, consider mounting a volume for it, but keep in mind it contains credentials.
 
 ## Running
 1) Update `config.toml` with your auth data and schedule.
@@ -40,7 +41,7 @@ docker run \
   -v $(pwd)/out:/app/data \
   -v $(pwd)/my-config.toml:/app/config.toml \
   -p 8888:8888 \
-  spotify-exporter
+  jakubdyszkiewicz/spotify-exporter:latest
 ```
 Change the [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), otherwise the Cron might surprise you.
 
