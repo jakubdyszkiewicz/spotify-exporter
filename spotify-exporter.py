@@ -88,8 +88,8 @@ def export_playlists(config):
             playlist_data.append({
                 'Playlist ID': playlist['id'],
                 'Playlist Name': playlist['name'],
-                'Playlist Description': playlist['description'],
-                'Playlist Owner': playlist['owner']['display_name'],
+                'Playlist Description': playlist.get('description', 'No description'),
+                'Playlist Owner': playlist.get('owner', {}).get('display_name', 'Unknown'),
             })
 
             tracks = sp.playlist_tracks(playlist['id'])
@@ -98,22 +98,14 @@ def export_playlists(config):
                     track = item['track']
                     tracks_data.append({
                         'Playlist ID': playlist['id'],
-                        'Track ID': track['id'],
-                        'Track Name': track['name'],
-                        'Artist(s)': ', '.join(artist['name'] for artist in track['artists']),
-                        'Album': track['album']['name'],
-                        'Album Release Date': track['album']['release_date'],
+                        'Track ID': track.get('id', 'Unknown'),
+                        'Track Name': track.get('name', 'Unknown'),
+                        'Artist(s)': ', '.join(artist.get('name', 'Unknown') for artist in track.get('artists', [])),
+                        'Album': track.get('album', {}).get('name', 'Unknown'),
+                        'Album Release Date': track.get('album', {}).get('release_date', 'Unknown'),
                     })
-                
-                if tracks['next']:
-                    tracks = sp.next(tracks)
-                else:
-                    tracks = None
-
-        if playlists['next']:
-            playlists = sp.next(playlists)
-        else:
-            playlists = None
+                tracks = sp.next(tracks) if tracks and tracks.get('next') else None
+        playlists = sp.next(playlists) if playlists and playlists.get('next') else None
 
     df = pd.DataFrame(playlist_data)
     output_file = os.path.join(config['results_dir'], 'spotify_playlists.csv')
