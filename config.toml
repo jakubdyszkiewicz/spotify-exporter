@@ -4,6 +4,7 @@ redirect_uri = "http://localhost:8888/callback"  # has to be the same as in spot
 ping_url = ""
 results_dir = "/app/data"
 auth_cache_dir = "/app/auth-cache"
+requests_timeout_seconds = 5
 
 [server]
 host = "0.0.0.0"

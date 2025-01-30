@@ -77,7 +77,10 @@ def start_oauth_server(config):
 def export_playlists(config):
     ensure_directory(config['results_dir'])
 
-    sp = spotipy.Spotify(auth_manager=get_auth_manager(config))
+    sp = spotipy.Spotify(
+        auth_manager=get_auth_manager(config),
+        requests_timeout=config.get('requests_timeout_seconds', 5)
+    )
     tracks_data = []
     playlist_data = []
     playlists = sp.current_user_playlists()
