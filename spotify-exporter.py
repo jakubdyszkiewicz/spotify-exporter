@@ -101,11 +101,11 @@ def export_playlists(config):
                     track = item['track']
                     tracks_data.append({
                         'Playlist ID': playlist['id'],
-                        'Track ID': track.get('id', 'Unknown'),
-                        'Track Name': track.get('name', 'Unknown'),
-                        'Artist(s)': ', '.join(artist.get('name', 'Unknown') for artist in track.get('artists', [])),
-                        'Album': track.get('album', {}).get('name', 'Unknown'),
-                        'Album Release Date': track.get('album', {}).get('release_date', 'Unknown'),
+                        'Track ID': track.get('id') or 'Unknown',
+                        'Track Name': track.get('name') or 'Unknown',
+                        'Artist(s)': ', '.join(artist.get('name') or 'Unknown' for artist in track.get('artists', [])),
+                        'Album': (track.get('album') or {}).get('name', 'Unknown'),
+                        'Album Release Date': (track.get('album') or {}).get('release_date', 'Unknown'),
                     })
                 tracks = sp.next(tracks) if tracks and tracks.get('next') else None
         playlists = sp.next(playlists) if playlists and playlists.get('next') else None
@@ -156,6 +156,9 @@ def main():
     oauth_thread = Thread(target=start_oauth_server, args=(config,))
     oauth_thread.daemon = True
     oauth_thread.start()
+
+    if config.get('run_on_start', False):
+        export_playlists(config)
 
     # Run the cron task
     cron_expression = config.get('schedule', {}).get('cron', "0 1 * * *")

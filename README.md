@@ -54,6 +54,7 @@ cd spotify-exporter
 
 python3 -m venv .venv
 source .venv/bin/activate
+# source .venv/bin/activate.fish for fish shell
 
 pip3 install -r requirements.txt
 
