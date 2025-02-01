@@ -5,6 +5,7 @@ ping_url = ""
 results_dir = "/app/data"
 auth_cache_dir = "/app/auth-cache"
 requests_timeout_seconds = 5
+run_on_start = false # in addition to schedule it runs immediately on script start
 
 [server]
 host = "0.0.0.0"
